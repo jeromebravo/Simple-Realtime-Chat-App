@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Simple Chat App</title>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-box">
+            <ul id="conversation"></ul>
+            <form id="form" autocomplete="off">
+                <input type="text" id="input" placeholder="Write your message here">
+                <button type="submit" class="btn">SEND</button>
+            </form>
+        </div>
+    </div>
+
+    <script src='/socket.io/socket.io.js'></script>
+    <script>
+        const socket = io('http://localhost:3000');
+
+        socket.on('connect', () => {
+            const id = socket.id;
+
+            document.querySelector('#form').addEventListener('submit', event => {
+                event.preventDefault();
+                const newMessage = document.querySelector('#input').value;
+                const data = {id, newMessage};
+                socket.emit('newMessageToServer', data);
+                document.querySelector('#input').value = '';
+            });
+
+            socket.on('newMessageToClient', data => {
+                const classname = data.id === id ? 'me' : 'others';
+                document.querySelector('#conversation').innerHTML += `<li class="message ${classname}">${data.newMessage}</li>`;
+            });
+        });
+    </script>
+</body>
+</html>
